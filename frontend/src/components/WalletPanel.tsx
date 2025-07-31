@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ethers } from 'ethers';
 import { Wallet, CreditCard, Smartphone, Plus, ArrowUpDown, Gift } from 'lucide-react';
 import MpesaModal from './MpesaModal';
 import CryptoModal from './CryptoModal';
@@ -10,6 +11,28 @@ interface WalletPanelProps {
 const WalletPanel: React.FC<WalletPanelProps> = ({ user }) => {
   const [showMpesaModal, setShowMpesaModal] = useState(false);
   const [showCryptoModal, setShowCryptoModal] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [ethBalance, setEthBalance] = useState<string>('0');
+
+  // 🔗 Connect MetaMask
+  const connectMetaMask = async () => {
+    if (!(window as any).ethereum) {
+      alert('MetaMask not detected! Install the extension.');
+      return;
+    }
+    try {
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      const address = accounts[0];
+      setWalletAddress(address);
+
+      const balanceWei = await provider.getBalance(address);
+      setEthBalance(ethers.formatEther(balanceWei));
+    } catch (error) {
+      console.error(error);
+      alert('MetaMask connection failed.');
+    }
+  };
 
   const rewards = [
     { id: 1, name: '₦100 Airtime', cost: 50, icon: '📱', type: 'airtime' },
@@ -31,6 +54,23 @@ const WalletPanel: React.FC<WalletPanelProps> = ({ user }) => {
         <div className="flex items-center space-x-3 mb-6">
           <Wallet className="w-6 h-6 text-yellow-400" />
           <h2 className="text-2xl font-bold text-white">My Wallet</h2>
+        </div>
+
+        {/* 🔗 MetaMask Connection */}
+        <div className="bg-gray-900 p-4 rounded-xl mb-4">
+          {walletAddress ? (
+            <div className="text-white text-sm">
+              <p>Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</p>
+              <p className="text-green-400">Balance: {ethBalance} ETH</p>
+            </div>
+          ) : (
+            <button
+              onClick={connectMetaMask}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Connect MetaMask
+            </button>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -57,6 +97,7 @@ const WalletPanel: React.FC<WalletPanelProps> = ({ user }) => {
           <h3 className="text-xl font-bold text-gray-800 mb-6">Manage Funds</h3>
           
           <div className="space-y-4">
+            {/* 🔗 M-Pesa Button */}
             <button
               onClick={() => setShowMpesaModal(true)}
               className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-all duration-300 border-2 border-green-200 hover:border-green-300"
@@ -71,6 +112,7 @@ const WalletPanel: React.FC<WalletPanelProps> = ({ user }) => {
               <Plus className="w-5 h-5 text-green-600" />
             </button>
 
+            {/* 🔗 Crypto Wallet Button */}
             <button
               onClick={() => setShowCryptoModal(true)}
               className="w-full flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 border-2 border-blue-200 hover:border-blue-300"

@@ -10,18 +10,38 @@ const MpesaModal: React.FC<MpesaModalProps> = ({ onClose }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [amount, setAmount] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep('processing');
-    
-    // Simulate M-Pesa STK Push
-    setTimeout(() => {
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setStep('processing');
+
+  try {
+    const response = await fetch('/api/payments/mpesa-stk/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone_number: phoneNumber.startsWith('254') 
+          ? phoneNumber 
+          : `254${phoneNumber.slice(-9)}`,
+        amount: amount,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.ResponseCode === "0") {
       setStep('success');
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    }, 3000);
-  };
+      setTimeout(() => onClose(), 2000);
+    } else {
+      alert(`❌ M-Pesa Error: ${data.errorMessage || 'Failed to initiate STK push'}`);
+      setStep('input');
+    }
+
+  } catch (error) {
+    alert('❌ Failed to connect to server');
+    setStep('input');
+  }
+};
+
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

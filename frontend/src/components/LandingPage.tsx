@@ -182,7 +182,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">USSD: *123#</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">USSD: *384*1390#</a></li>
               </ul>
             </div>
             
